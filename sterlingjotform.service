@@ -5,9 +5,9 @@ After=network.target
 [Service]
 User=root
 Group=www-data
-WorkingDirectory=/var/www/sterling_jotform
-Environment="PATH=/var/www/sterling_jotform/myenv/bin"
-ExecStart=/var/www/sterling_jotform/myenv/bin/gunicorn --workers 4 --bind 0.0.0.0:82 wsgi:app --access-logfile /var/www/sterling_jotform/access.log --error-logfile /var/www/sterling_jotform/error.log
+WorkingDirectory=/home/savitha_rohini/sterling_jotform
+Environment="PATH=/home/savitha_rohini/sterling_jotform/myenv/bin"
+ExecStart=/home/savitha_rohini/sterling_jotform/myenv/bin/gunicorn --workers 4 --bind 0.0.0.0:82 wsgi:app --access-logfile /home/savitha_rohini/sterling_jotform/access.log --error-logfile /home/savitha_rohini/sterling_jotform/error.log
 Restart=always
 
 [Install]
