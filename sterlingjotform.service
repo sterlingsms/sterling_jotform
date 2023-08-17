@@ -7,7 +7,7 @@ User=root
 Group=www-data
 WorkingDirectory=/sterling_jotform
 Environment="PATH=/sterling_jotform/myenv/bin"
-ExecStart=/sterling_jotform/myenv/bin/gunicorn --workers 4 --bind 0.0.0.0:82 wsgi:app --access-logfile /sterling_jotform/access.log --error-logfile /sterling_jotform/error.log
+ExecStart=/sterling_jotform/myenv/bin/gunicorn --workers 4 --bind 0.0.0.0:80 wsgi:app --access-logfile /sterling_jotform/access.log --error-logfile /sterling_jotform/error.log
 Restart=always
 
 [Install]
