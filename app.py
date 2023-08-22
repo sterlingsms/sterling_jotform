@@ -1,7 +1,7 @@
 from flask import Flask
 from medi_portal import medi_bp
 from oc_lab import oclab_bp
-from . import sterling_bp
+from sterling_jotform import sterling_bp
 from flask_cors import CORS
 import logging
 from logging.handlers import RotatingFileHandler
