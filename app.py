@@ -1,6 +1,7 @@
 from flask import Flask
 from medi_portal import medi_bp
 from oc_lab import oclab_bp
+from sterling_jotform import sterling_bp
 from flask_cors import CORS
 import logging
 from logging.handlers import RotatingFileHandler
@@ -26,6 +27,7 @@ def create_app():
     # Mount the modules under /medi_portal and /oc_lab
     app.register_blueprint(medi_bp)
     app.register_blueprint(oclab_bp)
+    app.register_blueprint(sterling_bp)
 
     CORS(app, resources={r"/*": {"origins": "*"}})
 
