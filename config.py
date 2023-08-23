@@ -42,4 +42,4 @@ OC_REQUEST_FORM_ID = '231296684863065'
 OC_PROVIDER_REGISTER_FORM_ID = '231925353092051'
 
 # site URL
-OC_REQUEST_FORM_SS="https://eldercare.sterlingadministration.com/oc-lab-request-dy?sid="
+OC_REQUEST_FORM_SS="https://oclabs.sterlingadministration.com/oc-lab-request?sid="
