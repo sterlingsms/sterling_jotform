@@ -35,7 +35,7 @@ def get_oclab_order_data(sid):
         # Print the absolute path of the file
         with open('oc_lab/data/form_order_request.txt', 'r') as html_file:
             html_string = html_file.read()
-        iframe_src = current_app.config['JOTFORM_EP_BASE_URL']+current_app.config['OC_REQUEST_FORM_ID']+"?PhysicianName="+physician_data['physician_name']+"&isIframeEmbed=1"
+        iframe_src = current_app.config['JOTFORM_EP_BASE_URL']+current_app.config['OC_REQUEST_FORM_ID']+"?PhysicianName="+physician_data['physician_name']+"&PhysicianLicense="+physician_data['physician_license']+"&PhysicianNPI="+physician_data['physician_npi']+"&isIframeEmbed=1"
         html_string_up = html_string.replace("__IFRAME_SRC__", iframe_src)
         response = {'content':html_string_up,"physician_data":physician_data,"iframe_src":iframe_src}
         return response
