@@ -173,7 +173,7 @@ class OCLab(JotformAPIBase):
             #submission_data = self.get_submission_data(sid)
             submissions_data = self.get_submissions_log(form_id)
             physician_data = self.get_submission_data(sid)
-            patients = physician_names = get_physician_name = ''
+            patients = physician_names = get_physician_name = get_physician_license = get_physician_npi = ''
             if '8' in physician_data['answers'].keys() and 'answer' in physician_data['answers']['8'].keys():
                 patient_names = json.loads(physician_data['answers']['8']['options_array']);
                 #values = [val["value"] for key, val in patient_names.items()]
@@ -195,9 +195,15 @@ class OCLab(JotformAPIBase):
                 physician_names = json.loads(submissions_data[0]['answers']['58']['options_array']);
             if '1' in physician_data['answers'].keys() and 'prettyFormat' in physician_data['answers']['1'].keys():
                 get_physician_name = physician_data['answers']['1']['prettyFormat']
+            if '11' in physician_data['answers'].keys() and 'answer' in physician_data['answers']['11'].keys():
+                get_physician_npi = physician_data['answers']['11']['answer']
+            if '12' in physician_data['answers'].keys() and 'answer' in physician_data['answers']['12'].keys():
+                get_physician_license = physician_data['answers']['12']['answer']
 
             response = {
                 "physician_name": get_physician_name,
+                "physician_npi": get_physician_npi,
+                "physician_license": get_physician_license,
                 "physician_data":physician_data,
                 "patient_names":patients,
                 "sid":physician_names
