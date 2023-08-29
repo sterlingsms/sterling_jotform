@@ -23,20 +23,33 @@ class OCLab(JotformAPIBase):
         pstDateTime = date.strftime(date_format)
         return pstDateTime
 
-    def get_summary(self, submission_data):
-        get_lab_tests = get_name = get_vitals = summary2 = ''
-        if '15' in submission_data['answers'].keys() and 'answer' in submission_data['answers']['15'].keys():
-            get_lab_tests = submission_data['answers']['15']['answer'].split("\r\n")
+    def get_summary(self, submission_data, physician_data):
+        get_lab_tests = get_name = get_vitals = summary2 = get_lab_tests_other = get_physician_license = get_physician_npi = get_location = ''
+        if '66' in submission_data['answers'].keys() and 'answer' in submission_data['answers']['66'].keys():
+            get_lab_tests = submission_data['answers']['66']['answer']
         if '8' in submission_data['answers'].keys() and 'answer' in submission_data['answers']['8'].keys():
             get_name = submission_data['answers']['8']['answer']
         if '48' in submission_data['answers'].keys() and 'answer' in submission_data['answers']['48'].keys():
             get_vitals = submission_data['answers']['48']['answer']
+        if '65' in submission_data['answers'].keys() and 'answer' in submission_data['answers']['65'].keys():
+            get_lab_tests_other = submission_data['answers']['65']['answer']
+        if '61' in submission_data['answers'].keys() and 'answer' in submission_data['answers']['61'].keys():
+            get_location = submission_data['answers']['61']['answer']
+        if physician_data != '' and '11' in physician_data['answers'].keys() and 'answer' in physician_data['answers']['11'].keys():
+            get_physician_npi = physician_data['answers']['11']['answer']
+        if physician_data != '' and '12' in physician_data['answers'].keys() and 'answer' in physician_data['answers']['12'].keys():
+            get_physician_license = physician_data['answers']['12']['answer']
         summary = 'Lab Order Request for: <strong>'+get_name+'</strong><br><br>'+'<strong>Vitals Requested:</strong> '+get_vitals+'<br><br>'
         #summary2 = 'Lab Order Request for: <strong>'+get_name+'</strong><br><br>'
         summary2 += '<strong>Specimen Collection Items Requested:</strong><br><br>'
         if len(get_lab_tests) >= 1:
             for i in get_lab_tests:
-                summary2 += '- ' + i +  ' Requested' + '<br>'
+                if i == 'OTHER' and get_lab_tests_other != '':
+                    summary2 += '- ' + get_lab_tests_other +  ' Requested' + '<br>'
+                else:
+                    summary2 += '- ' + i +  ' Requested' + '<br>'
+        summary2 += '<br><strong>Physician ID: </strong>'+get_physician_license+'<br>'+'<strong>Physician NPI ID:</strong> '+get_physician_npi+'<br>'
+        summary2 += '<strong>Geo Location:</strong> '+get_location+'<br>'
         return {'summary':summary,'summary2':summary2}
 
     def get_log_table(self, collection_log=[], patient_name=None, vital=False):
@@ -136,9 +149,13 @@ class OCLab(JotformAPIBase):
         return pst_str
 
     def get_dynamic_data(self,form_id=None,sid=None):
+        physician_data = ''
         submission_data = self.get_submission_data(sid)
+        if '68' in submission_data['answers'].keys() and 'answer' in submission_data['answers']['68'].keys():
+            get_physician_sid = submission_data['answers']['68']['answer']
+            physician_data = self.get_submission_data(get_physician_sid)
         order_collection_form_source = self.get_order_collection_form(form_id)
-        get_summary = self.get_summary(submission_data)
+        get_summary = self.get_summary(submission_data,physician_data)
         get_vitals = get_patient_name = get_physician_name = ''
         # Patient name question id - q8 - check q56 exist or not
         if '56' in submission_data['answers'].keys() and 'answer' in submission_data['answers']['56'].keys():
@@ -160,6 +177,7 @@ class OCLab(JotformAPIBase):
             "patient_name": get_patient_name,
             "physician_name": get_physician_name,
             "submission_data": submission_data,
+            "physician_data":physician_data,
             "summary": get_summary['summary']+get_summary['summary2'],#vitals_summary,
             #"summary2": get_summary['summary2']+collection_log_table['gettabe2'],
             "get_vital": get_vital,
