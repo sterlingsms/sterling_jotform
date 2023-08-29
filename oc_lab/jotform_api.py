@@ -140,7 +140,7 @@ class OCLab(JotformAPIBase):
         order_collection_form_source = self.get_order_collection_form(form_id)
         get_summary = self.get_summary(submission_data)
         get_vitals = get_patient_name = get_physician_name = ''
-        # Patient name question id - q8
+        # Patient name question id - q8 - check q56 exist or not
         if '56' in submission_data['answers'].keys() and 'answer' in submission_data['answers']['56'].keys():
             get_patient_name = submission_data['answers']['56']['answer']
         if '9' in submission_data['answers'].keys() and 'answer' in submission_data['answers']['9'].keys():
@@ -181,13 +181,10 @@ class OCLab(JotformAPIBase):
                 pids = [patient_names[pid.replace('{', '').replace('}', '')]["value"] for pid in patient_ids]
                 patients = "|".join(pids)
 
-            question_data_56 = self.get_form_question_data(form_id,qid='56')
             question_data_8 = self.get_form_question_data(form_id,qid='8')
 
-            question_properties_56 = question_data_56
             question_properties_8 = question_data_8
-            question_properties_8['items'] = question_properties_56['options'] = patients
-            updated_question_56 = self.update_form_question_data(form_id,qid='56',question_properties=question_properties_56)
+            question_properties_8['items'] = patients
             updated_question_8 = self.update_form_question_data(form_id,qid='8',question_properties=question_properties_8)
             
             # Physician name question id - q51
@@ -211,17 +208,13 @@ class OCLab(JotformAPIBase):
             return response
 
     def clear_request_form_data(self,form_id=None):
-            question_data_56 = self.get_form_question_data(form_id,qid='56')
             question_data_8 = self.get_form_question_data(form_id,qid='8')
 
-            question_properties_56 = question_data_56
             question_properties_8 = question_data_8
-            question_properties_8['items'] = question_properties_56['options'] = ""
-            updated_question_56 = self.update_form_question_data(form_id,qid='56',question_properties=question_properties_56)
+            question_properties_8['items'] = ''
             updated_question_8 = self.update_form_question_data(form_id,qid='8',question_properties=question_properties_8)
             
             response = {
-                "question_56": updated_question_56,
                 "question_8":updated_question_8,
             }
             return response
