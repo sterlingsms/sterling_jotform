@@ -49,7 +49,7 @@ class OCLab(JotformAPIBase):
                 else:
                     summary2 += '- ' + i +  ' Requested' + '<br>'
         summary2 += '<br><strong>Physician ID: </strong>'+get_physician_license+'<br>'+'<strong>Physician NPI ID:</strong> '+get_physician_npi+'<br>'
-        summary2 += '<strong>Geo Location:</strong> '+get_location+'<br>'
+        summary2 += '<strong>Geo Location:</strong> <a href="'+get_location+'">Physician Location</a><br>'
         return {'summary':summary,'summary2':summary2}
 
     def get_log_table(self, collection_log=[], patient_name=None, vital=False):
@@ -193,11 +193,12 @@ class OCLab(JotformAPIBase):
             physician_data = self.get_submission_data(sid)
             patients = physician_names = get_physician_name = get_physician_license = get_physician_npi = ''
             if '8' in physician_data['answers'].keys() and 'answer' in physician_data['answers']['8'].keys():
-                patient_names = json.loads(physician_data['answers']['8']['options_array']);
                 #values = [val["value"] for key, val in patient_names.items()]
                 patient_ids = physician_data['answers']['8']['answer']
-                pids = [patient_names[pid.replace('{', '').replace('}', '')]["value"] for pid in patient_ids]
-                patients = "|".join(pids)
+                if 'options_array' in physician_data['answers']['8'].keys():
+                    patient_names = json.loads(physician_data['answers']['8']['options_array']);
+                    pids = [patient_names[pid.replace('{', '').replace('}', '')]["value"] for pid in patient_ids]
+                    patients = "|".join(pids)
 
             question_data_8 = self.get_form_question_data(form_id,qid='8')
 
