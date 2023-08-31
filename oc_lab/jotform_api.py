@@ -24,11 +24,15 @@ class OCLab(JotformAPIBase):
         return pstDateTime
 
     def get_summary(self, submission_data, physician_data):
-        get_lab_tests = get_name = get_vitals = summary2 = get_lab_tests_other = get_physician_license = get_physician_npi = get_location = ''
-        if '66' in submission_data['answers'].keys() and 'answer' in submission_data['answers']['66'].keys():
-            get_lab_tests = submission_data['answers']['66']['answer']
-        if '8' in submission_data['answers'].keys() and 'answer' in submission_data['answers']['8'].keys():
-            get_name = submission_data['answers']['8']['answer']
+        get_lab_tests = get_lab_tests2 = get_patient_info = get_patient_info_labels = patientInfo = patientName = is_complete = get_ids_pics = get_physician_signature = get_vitals = summary2 = get_lab_tests_other = get_physician_license = get_physician_npi = get_location = ''
+        if '108' in submission_data['answers'].keys() and 'answer' in submission_data['answers']['108'].keys():
+            get_lab_tests = submission_data['answers']['108']['answer']
+        if '112' in submission_data['answers'].keys() and 'answer' in submission_data['answers']['112'].keys():
+            get_lab_tests2 = submission_data['answers']['112']['answer']
+        if '111' in submission_data['answers'].keys() and 'sublabels' in submission_data['answers']['111'].keys():
+            get_patient_info_labels = submission_data['answers']['111']['sublabels']
+        if '110' in submission_data['answers'].keys() and 'answer' in submission_data['answers']['110'].keys():
+            is_complete = submission_data['answers']['110']['answer']
         if '48' in submission_data['answers'].keys() and 'answer' in submission_data['answers']['48'].keys():
             get_vitals = submission_data['answers']['48']['answer']
         if '65' in submission_data['answers'].keys() and 'answer' in submission_data['answers']['65'].keys():
@@ -39,18 +43,51 @@ class OCLab(JotformAPIBase):
             get_physician_npi = physician_data['answers']['11']['answer']
         if physician_data != '' and '12' in physician_data['answers'].keys() and 'answer' in physician_data['answers']['12'].keys():
             get_physician_license = physician_data['answers']['12']['answer']
-        summary = 'Lab Order Request for: <strong>'+get_name+'</strong><br><br>'+'<strong>Vitals Requested:</strong> '+get_vitals+'<br><br>'
-        #summary2 = 'Lab Order Request for: <strong>'+get_name+'</strong><br><br>'
+        if '75' in submission_data['answers'].keys() and 'answer' in submission_data['answers']['75'].keys():
+            get_physician_signature = "<img src="+submission_data['answers']['75']['answer']+" alt="+submission_data['answers']['75']['text']+" title="+submission_data['answers']['75']['text']+">"
+        if '111' in submission_data['answers'].keys() and 'answer' in submission_data['answers']['111'].keys():
+            get_patient_info = submission_data['answers']['111']['answer']
+        
+        patient_info_labels = json.loads(get_patient_info_labels)
+        if len(patient_info_labels) >= 1:
+            for k,v in patient_info_labels.items():
+                patientVal = get_patient_info[k] if k in get_patient_info else ''
+                if v == 'Patient Name':
+                    patientName = patientVal
+                    continue
+                patientInfo += '<tr><td>'+v+': </td><td>'+patientVal+'</td></tr>'
+        patientInfo_table = "<table><tbody>"+patientInfo+"</tbody></table>"
+
+        if is_complete == 'PENDING':
+            is_complete = '<br><p class="form_status">Form Is Pending</p><br>'
+        else:
+            is_complete = ''
+
+        """get_ids_pics = '<a href="" class="big" rel="rel1"><img src="" alt="ID" title="Image 1"></a>'
+        get_gallery = '<div class="gallery">'+get_ids_pics+'</div>'"""
+        summary = is_complete+patientInfo_table+'<br><br>'+'<strong>Vitals Requested:</strong> '+get_vitals+'<br><br>'
+        #summary2 = 'Lab Order Request for: <strong>'+get_patient_info+'</strong><br><br>'
         summary2 += '<strong>Specimen Collection Items Requested:</strong><br><br>'
+        
         if len(get_lab_tests) >= 1:
-            for i in get_lab_tests:
+            for i,j in get_lab_tests.items():
                 if i == 'OTHER' and get_lab_tests_other != '':
                     summary2 += '- ' + get_lab_tests_other +  ' Requested' + '<br>'
-                else:
-                    summary2 += '- ' + i +  ' Requested' + '<br>'
+                elif j != '':
+                    test_info = json.loads(j)
+                    if test_info[0] != '':
+                        summary2 += '- ' + i +  ' Requested ( DX Code :'+test_info[1]+ ')<br>'
+        if len(get_lab_tests2) >= 1:
+            for m,n in get_lab_tests2.items():
+                if m == 'OTHER' and get_lab_tests_other != '':
+                    summary2 += '- ' + get_lab_tests_other +  ' Requested' + '<br>'
+                elif n != '':
+                    test_info2 = json.loads(n)
+                    if test_info2[0] != '':
+                        summary2 += '- ' + m +  ' Requested ( DX Code :'+test_info2[1]+ ')<br>'
         summary2 += '<br><strong>Physician ID: </strong>'+get_physician_license+'<br>'+'<strong>Physician NPI ID:</strong> '+get_physician_npi+'<br>'
         summary2 += '<strong>Geo Location:</strong> <a href="'+get_location+'">Physician Location</a><br>'
-        return {'summary':summary,'summary2':summary2}
+        return {'summary':summary,'summary2':summary2,'patientName':patientName,'getPhysicianSignature':get_physician_signature}
 
     def get_log_table(self, collection_log=[], patient_name=None, vital=False):
         getrow = getrow2 = ""
@@ -157,15 +194,13 @@ class OCLab(JotformAPIBase):
         order_collection_form_source = self.get_order_collection_form(form_id)
         get_summary = self.get_summary(submission_data,physician_data)
         get_vitals = get_patient_name = get_physician_name = ''
+        get_patient_name = get_summary['patientName']
+        get_physician_signature = get_summary['getPhysicianSignature']
         # Patient name question id - q8 - check q56 exist or not
-        if '56' in submission_data['answers'].keys() and 'answer' in submission_data['answers']['56'].keys():
-            get_patient_name = submission_data['answers']['56']['answer']
         if '9' in submission_data['answers'].keys() and 'answer' in submission_data['answers']['9'].keys():
             get_physician_name = submission_data['answers']['9']['answer']
         if '48' in submission_data['answers'].keys() and 'answer' in submission_data['answers']['48'].keys():
             get_vitals = submission_data['answers']['48']['answer']
-        if get_patient_name == '' and '8' in submission_data['answers'].keys() and 'answer' in submission_data['answers']['8'].keys():
-            get_patient_name = submission_data['answers']['8']['answer']
         get_vital = True if get_vitals == 'YES' else False
         """submission_filter = {"4:eq": get_patient_name}
 
@@ -178,6 +213,7 @@ class OCLab(JotformAPIBase):
             "physician_name": get_physician_name,
             "submission_data": submission_data,
             "physician_data":physician_data,
+            "physician_signature":get_physician_signature,
             "summary": get_summary['summary']+get_summary['summary2'],#vitals_summary,
             #"summary2": get_summary['summary2']+collection_log_table['gettabe2'],
             "get_vital": get_vital,
@@ -198,14 +234,7 @@ class OCLab(JotformAPIBase):
                 if 'options_array' in physician_data['answers']['8'].keys():
                     patient_names = json.loads(physician_data['answers']['8']['options_array']);
                     pids = [patient_names[pid.replace('{', '').replace('}', '')]["value"] for pid in patient_ids]
-                    patients = "|".join(pids)
-
-            question_data_8 = self.get_form_question_data(form_id,qid='8')
-
-            question_properties_8 = question_data_8
-            question_properties_8['items'] = patients
-            updated_question_8 = self.update_form_question_data(form_id,qid='8',question_properties=question_properties_8)
-            
+                    patients = "|".join(pids)            
             # Physician name question id - q51
             if len(submissions_data) > 0 and '58' in submissions_data[0]['answers'].keys() and 'options_array' in submissions_data[0]['answers']['58'].keys():
                 physician_names = json.loads(submissions_data[0]['answers']['58']['options_array']);
