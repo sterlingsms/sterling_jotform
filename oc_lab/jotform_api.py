@@ -24,7 +24,7 @@ class OCLab(JotformAPIBase):
         return pstDateTime
 
     def get_summary(self, submission_data, physician_data):
-        get_lab_tests = get_lab_tests2 = get_patient_info = get_patient_info_labels = patientInfo = patientName = is_complete = get_ids_pics = get_physician_signature = get_vitals = summary2 = get_lab_tests_other = get_physician_license = get_physician_npi = get_location = ''
+        get_lab_tests = get_lab_tests2 = pcrPanel1= pcrPanel2 = get_patient_info = get_patient_info_labels = patientInfo = patientName = is_complete = get_ids_pics = get_physician_signature = get_vitals = summary2 = get_lab_tests_other = get_physician_license = get_physician_npi = get_location = ''
         if '108' in submission_data['answers'].keys() and 'answer' in submission_data['answers']['108'].keys():
             get_lab_tests = submission_data['answers']['108']['answer']
         if '112' in submission_data['answers'].keys() and 'answer' in submission_data['answers']['112'].keys():
@@ -47,6 +47,10 @@ class OCLab(JotformAPIBase):
             get_physician_signature = "<img src="+submission_data['answers']['75']['answer']+" alt="+submission_data['answers']['75']['text']+" title="+submission_data['answers']['75']['text']+">"
         if '111' in submission_data['answers'].keys() and 'answer' in submission_data['answers']['111'].keys():
             get_patient_info = submission_data['answers']['111']['answer']
+        if '118' in submission_data['answers'].keys() and 'prettyFormat' in submission_data['answers']['118'].keys():
+            pcrPanel1 = submission_data['answers']['118']['prettyFormat']
+        if '119' in submission_data['answers'].keys() and 'prettyFormat' in submission_data['answers']['119'].keys():
+            pcrPanel2 = submission_data['answers']['119']['prettyFormat']
         
         patient_info_labels = json.loads(get_patient_info_labels)
         if len(patient_info_labels) >= 1:
@@ -67,9 +71,9 @@ class OCLab(JotformAPIBase):
         get_gallery = '<div class="gallery">'+get_ids_pics+'</div>'"""
         summary = is_complete+patientInfo_table+'<br><br>'+'<strong>Vitals Requested:</strong> '+get_vitals+'<br><br>'
         #summary2 = 'Lab Order Request for: <strong>'+get_patient_info+'</strong><br><br>'
-        summary2 += '<strong>Specimen Collection Items Requested:</strong><br><br>'
+        summary2 += '<strong>Specimen Collection Items Requested:</strong><br><br><strong>PCR Panel 1</strong>'+pcrPanel1+'<br><br><strong>PCR Panel 2</strong>'+pcrPanel2
         
-        if len(get_lab_tests) >= 1:
+        """if len(get_lab_tests) >= 1:
             for i,j in get_lab_tests.items():
                 if i == 'OTHER' and get_lab_tests_other != '':
                     summary2 += '- ' + get_lab_tests_other +  ' Requested' + '<br>'
@@ -84,7 +88,7 @@ class OCLab(JotformAPIBase):
                 elif n != '':
                     test_info2 = json.loads(n)
                     if test_info2[0] != '':
-                        summary2 += '- ' + m +  ' Requested ( DX Code :'+test_info2[1]+ ')<br>'
+                        summary2 += '- ' + m +  ' Requested ( DX Code :'+test_info2[1]+ ')<br>'"""
         summary2 += '<br><strong>Physician ID: </strong>'+get_physician_license+'<br>'+'<strong>Physician NPI ID:</strong> '+get_physician_npi+'<br>'
         summary2 += '<strong>Geo Location:</strong> <a href="'+get_location+'">Physician Location</a><br>'
         return {'summary':summary,'summary2':summary2,'patientName':patientName,'getPhysicianSignature':get_physician_signature}
