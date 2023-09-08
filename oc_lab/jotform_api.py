@@ -24,11 +24,11 @@ class OCLab(JotformAPIBase):
         return pstDateTime
 
     def get_summary(self, submission_data, physician_data):
-        get_lab_tests = get_lab_tests2 = pcrPanel1= pcrPanel2 = get_patient_info = get_patient_info_labels = patientInfo = patientName = is_complete = get_ids_pics = get_physician_signature = get_vitals = summary2 = get_lab_tests_other = get_physician_license = get_physician_npi = get_location = ''
-        if '108' in submission_data['answers'].keys() and 'answer' in submission_data['answers']['108'].keys():
-            get_lab_tests = submission_data['answers']['108']['answer']
-        if '112' in submission_data['answers'].keys() and 'answer' in submission_data['answers']['112'].keys():
-            get_lab_tests2 = submission_data['answers']['112']['answer']
+        get_lab_tests = get_lab_tests2 = pcrPanel1= pcrPanel2 = get_patient_info = get_patient_info_labels = patientInfo = patientName = vitals_tests = is_complete = get_ids_pics = get_physician_signature = get_vitals = summary2 = get_lab_tests_other = get_physician_license = get_physician_npi = get_location = ''
+        if '108' in submission_data['answers'].keys() and 'prettyFormat' in submission_data['answers']['108'].keys():
+            get_lab_tests = submission_data['answers']['108']['prettyFormat']
+        if '112' in submission_data['answers'].keys() and 'prettyFormat' in submission_data['answers']['112'].keys():
+            get_lab_tests2 = submission_data['answers']['112']['prettyFormat']
         if '111' in submission_data['answers'].keys() and 'sublabels' in submission_data['answers']['111'].keys():
             get_patient_info_labels = submission_data['answers']['111']['sublabels']
         if '110' in submission_data['answers'].keys() and 'answer' in submission_data['answers']['110'].keys():
@@ -51,6 +51,8 @@ class OCLab(JotformAPIBase):
             pcrPanel1 = submission_data['answers']['118']['prettyFormat']
         if '119' in submission_data['answers'].keys() and 'prettyFormat' in submission_data['answers']['119'].keys():
             pcrPanel2 = submission_data['answers']['119']['prettyFormat']
+        if '121' in submission_data['answers'].keys() and 'answer' in submission_data['answers']['121'].keys():
+            vitals_tests = submission_data['answers']['121']['answer']
         
         patient_info_labels = json.loads(get_patient_info_labels)
         if len(patient_info_labels) >= 1:
@@ -70,8 +72,17 @@ class OCLab(JotformAPIBase):
         """get_ids_pics = '<a href="" class="big" rel="rel1"><img src="" alt="ID" title="Image 1"></a>'
         get_gallery = '<div class="gallery">'+get_ids_pics+'</div>'"""
         summary = is_complete+patientInfo_table+'<br><br>'+'<strong>Vitals Requested:</strong> '+get_vitals+'<br><br>'
+        if len(vitals_tests) > 0:
+            vt_body = ''
+            for vt in vitals_tests:
+                vt_body += '<tr><td>'+vt+'</td></tr>'
+            summary +="<div class='vt_container'><table><tbody>"+vt_body+"</tbody></table></div><br><br>"
         #summary2 = 'Lab Order Request for: <strong>'+get_patient_info+'</strong><br><br>'
-        summary2 += '<strong>Specimen Collection Items Requested:</strong><br><br><strong>PCR Panel 1</strong>'+pcrPanel1+'<br><br><strong>PCR Panel 2</strong>'+pcrPanel2
+        summary2 += '<strong>Specimen Collection Items Requested:</strong>'
+        summary2 += '<br><br><strong>PCR Panel 1</strong>'+pcrPanel1 if pcrPanel1 != '' else ''
+        summary2 += '<br><br><strong>PCR Panel 2</strong>'+pcrPanel2 if pcrPanel2 != '' else ''
+        summary2 += '<br><br><strong>Blood Test 1</strong><div class="blood_test_tabel">'+get_lab_tests+'</div>' if get_lab_tests != '' else '</div>'
+        summary2 += '<br><br><strong>Blood Test 2</strong><div class="blood_test_tabel">'+get_lab_tests2+'</div>' if get_lab_tests2 != '' else '</div>'
         
         """if len(get_lab_tests) >= 1:
             for i,j in get_lab_tests.items():
@@ -231,7 +242,7 @@ class OCLab(JotformAPIBase):
             #submission_data = self.get_submission_data(sid)
             submissions_data = self.get_submissions_log(form_id)
             physician_data = self.get_submission_data(sid)
-            patients = physician_names = get_physician_name = get_physician_license = get_physician_npi = ''
+            patients = physician_names = get_physician_name = get_physician_license = get_physician_npi = get_degree_designation =''
             if '8' in physician_data['answers'].keys() and 'answer' in physician_data['answers']['8'].keys():
                 #values = [val["value"] for key, val in patient_names.items()]
                 patient_ids = physician_data['answers']['8']['answer']
@@ -248,11 +259,14 @@ class OCLab(JotformAPIBase):
                 get_physician_npi = physician_data['answers']['11']['answer']
             if '12' in physician_data['answers'].keys() and 'answer' in physician_data['answers']['12'].keys():
                 get_physician_license = physician_data['answers']['12']['answer']
+            if '13' in physician_data['answers'].keys() and 'answer' in physician_data['answers']['13'].keys():
+                get_degree_designation = ', '+', '.join(physician_data['answers']['13']['answer'])
 
             response = {
                 "physician_name": get_physician_name,
                 "physician_npi": get_physician_npi,
                 "physician_license": get_physician_license,
+                "degree_designation":get_degree_designation,
                 "physician_data":physician_data,
                 "patient_names":patients,
                 "sid":physician_names
