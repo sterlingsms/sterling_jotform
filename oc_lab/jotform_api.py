@@ -24,7 +24,7 @@ class OCLab(JotformAPIBase):
         return pstDateTime
 
     def get_summary(self, submission_data, physician_data):
-        get_lab_tests = get_lab_tests2 = pcrPanel1= pcrPanel2 = get_patient_info = get_patient_info_labels = patientInfo = patientName = vitals_tests = is_complete = get_ids_pics = get_physician_signature = get_vitals = summary2 = get_lab_tests_other = get_physician_license = get_physician_npi = get_location = ''
+        get_lab_tests = get_lab_tests2 = pcrPanel1= pcrPanel2 = get_patient_info = get_patient_info_labels = patientInfo = subscription = patientName = vitals_tests = is_complete = get_ids_pics = get_physician_signature = get_vitals = summary2 = get_lab_tests_other = get_physician_license = get_physician_npi = get_location = ''
         if '108' in submission_data['answers'].keys() and 'prettyFormat' in submission_data['answers']['108'].keys():
             get_lab_tests = submission_data['answers']['108']['prettyFormat']
         if '112' in submission_data['answers'].keys() and 'prettyFormat' in submission_data['answers']['112'].keys():
@@ -53,6 +53,8 @@ class OCLab(JotformAPIBase):
             pcrPanel2 = submission_data['answers']['119']['prettyFormat']
         if '121' in submission_data['answers'].keys() and 'answer' in submission_data['answers']['121'].keys():
             vitals_tests = submission_data['answers']['121']['answer']
+        if '122' in submission_data['answers'].keys() and 'answer' in submission_data['answers']['122'].keys():
+            subscription = submission_data['answers']['122']['answer'][0]
         
         patient_info_labels = json.loads(get_patient_info_labels)
         if len(patient_info_labels) >= 1:
@@ -83,7 +85,7 @@ class OCLab(JotformAPIBase):
         summary2 += '<br><br><strong>PCR Panel 2</strong>'+pcrPanel2 if pcrPanel2 != '' else ''
         summary2 += '<br><br><strong>Blood Test 1</strong><div class="blood_test_tabel">'+get_lab_tests+'</div>' if get_lab_tests != '' else '</div>'
         summary2 += '<br><br><strong>Blood Test 2</strong><div class="blood_test_tabel">'+get_lab_tests2+'</div>' if get_lab_tests2 != '' else '</div>'
-        
+        summary2 += '<br><br>'+'<strong>Subscription Requested? </strong> '+subscription+'<br><br>'
         """if len(get_lab_tests) >= 1:
             for i,j in get_lab_tests.items():
                 if i == 'OTHER' and get_lab_tests_other != '':
