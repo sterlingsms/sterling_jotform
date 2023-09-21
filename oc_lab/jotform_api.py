@@ -24,11 +24,11 @@ class OCLab(JotformAPIBase):
         return pstDateTime
 
     def get_summary(self, submission_data, physician_data):
-        get_lab_tests = get_lab_tests2 = pcrPanel1= pcrPanel2 = get_patient_info = get_patient_info_labels = patientInfo = subscription = patientName = vitals_tests = is_complete = get_ids_pics = get_physician_signature = get_vitals = summary2 = get_lab_tests_other = get_physician_license = get_physician_npi = get_location = ''
-        if '108' in submission_data['answers'].keys() and 'prettyFormat' in submission_data['answers']['108'].keys():
-            get_lab_tests = submission_data['answers']['108']['prettyFormat']
-        if '112' in submission_data['answers'].keys() and 'prettyFormat' in submission_data['answers']['112'].keys():
-            get_lab_tests2 = submission_data['answers']['112']['prettyFormat']
+        get_lab_tests = get_lab_tests2 = pcrPanel1= pcrPanel2 = get_patient_info = get_patient_info_labels = patientInfo_table= patientInfo = dx_codes= subscription = patientName = vitals_tests = is_complete = get_ids_pics = get_physician_signature = get_vitals = summary2 = get_lab_tests_other = get_physician_license = get_physician_npi = get_location = ''
+        if '128' in submission_data['answers'].keys() and 'answer' in submission_data['answers']['128'].keys():
+            get_lab_tests = submission_data['answers']['128']['answer']
+        if '129' in submission_data['answers'].keys() and 'answer' in submission_data['answers']['129'].keys():
+            get_lab_tests2 = submission_data['answers']['129']['answer']
         if '111' in submission_data['answers'].keys() and 'sublabels' in submission_data['answers']['111'].keys():
             get_patient_info_labels = submission_data['answers']['111']['sublabels']
         if '110' in submission_data['answers'].keys() and 'answer' in submission_data['answers']['110'].keys():
@@ -55,16 +55,19 @@ class OCLab(JotformAPIBase):
             vitals_tests = submission_data['answers']['121']['answer']
         if '122' in submission_data['answers'].keys() and 'answer' in submission_data['answers']['122'].keys():
             subscription = submission_data['answers']['122']['answer'][0]
+        if '130' in submission_data['answers'].keys() and 'answer' in submission_data['answers']['130'].keys():
+            dx_codes = submission_data['answers']['130']['answer']
         
-        patient_info_labels = json.loads(get_patient_info_labels)
-        if len(patient_info_labels) >= 1:
-            for k,v in patient_info_labels.items():
-                patientVal = get_patient_info[k] if k in get_patient_info else ''
-                if v == 'Patient Name':
-                    patientName = patientVal
-                    continue
-                patientInfo += '<tr><td>'+v+': </td><td>'+patientVal+'</td></tr>'
-        patientInfo_table = "<table><tbody>"+patientInfo+"</tbody></table>"
+        if get_patient_info_labels != '':
+            patient_info_labels = json.loads(get_patient_info_labels)
+            if len(patient_info_labels) >= 1:
+                for k,v in patient_info_labels.items():
+                    patientVal = get_patient_info[k] if k in get_patient_info else ''
+                    if v == 'Patient Name':
+                        patientName = patientVal
+                        continue
+                    patientInfo += '<tr><td>'+v+': </td><td>'+patientVal+'</td></tr>'
+            patientInfo_table = "<table><tbody>"+patientInfo+"</tbody></table>"
 
         if is_complete == 'PENDING':
             is_complete = '<br><p class="form_status">Form Is Pending</p><br>'
@@ -83,8 +86,23 @@ class OCLab(JotformAPIBase):
         summary2 += '<strong>Specimen Collection Items Requested:</strong>'
         summary2 += '<br><br><strong>PCR Panel 1</strong>'+pcrPanel1 if pcrPanel1 != '' else ''
         summary2 += '<br><br><strong>PCR Panel 2</strong>'+pcrPanel2 if pcrPanel2 != '' else ''
-        summary2 += '<br><br><strong>Blood Test 1</strong><div class="blood_test_tabel">'+get_lab_tests+'</div>' if get_lab_tests != '' else '</div>'
-        summary2 += '<br><br><strong>Blood Test 2</strong><div class="blood_test_tabel">'+get_lab_tests2+'</div>' if get_lab_tests2 != '' else '</div>'
+        if len(get_lab_tests) > 0:
+            bt_body = ''
+            for bt in get_lab_tests:
+                bt_body += '<tr><td>'+bt+'</td></tr>'
+            summary2 +='<br><br><strong>Blood Test 1</strong><div class="vt_container"><table><tbody>'+bt_body+'</tbody></table></div>' if bt_body != '' else '</div>'
+        #summary2 += '<br><br><strong>Blood Test 1</strong><div class="blood_test_tabel">'+get_lab_tests+'</div>' if get_lab_tests != '' else '</div>'
+        if len(get_lab_tests2) > 0:
+            bt2_body = ''
+            for bt2 in get_lab_tests2:
+                bt2_body += '<tr><td>'+bt2+'</td></tr>'
+            summary2 +='<br><br><strong>Blood Test 2</strong><div class="vt_container"><table><tbody>'+bt2_body+'</tbody></table></div>' if bt2_body != '' else '</div>'
+        #summary2 += '<br><br><strong>Blood Test 2</strong><div class="blood_test_tabel">'+get_lab_tests2+'</div>' if get_lab_tests2 != '' else '</div>'
+        if len(dx_codes) > 0:
+            dx_body = ''
+            for dx in dx_codes:
+                dx_body += '<tr><td>'+dx+'</td></tr>'
+            summary2 +='<br><br><strong>DX Code(s)</strong><div class="vt_container"><table><tbody>'+dx_body+'</tbody></table></div>' if dx_body != '' else '</div>'
         summary2 += '<br><br>'+'<strong>Subscription Requested? </strong> '+subscription+'<br><br>'
         """if len(get_lab_tests) >= 1:
             for i,j in get_lab_tests.items():
